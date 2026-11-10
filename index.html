@@ -22,9 +22,24 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+/* Welcome Splash Screen */
+#welcome-screen{
+  position:fixed;inset:0;background:var(--ink);color:#fff;z-index:999;
+  display:grid;place-items:center;font-size:32px;font-weight:600;letter-spacing:-.03em;
+  animation:fadeOut .6s ease 1.2s forwards;pointer-events:none;
+}
+#welcome-screen span{animation:scaleUp .8s cubic-bezier(0.16, 1, 0.3, 1) both}
+@keyframes scaleUp{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fadeOut{to{opacity:0;visibility:hidden}}
+
+/* Stats Banner */
+.stats-banner{max-width:900px;margin:12px auto 4px;padding:0 16px}
+.stats-inner{background:#fff;border-radius:16px;padding:12px 18px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.stats-inner b{color:var(--ink);font-weight:500}
+
 /* Header + filter (menempel di atas) */
 .top{position:sticky;top:0;z-index:5;background:var(--bg);
-  padding:calc(18px + env(safe-area-inset-top,0px)) 16px 10px}
+  padding:calc(12px + env(safe-area-inset-top,0px)) 16px 10px}
 .top-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 h1{font-size:44px;font-weight:500;letter-spacing:-.04em;line-height:1}
 .count{font-size:14px;color:var(--muted);padding-bottom:6px;text-align:right}
@@ -39,21 +54,21 @@ h1{font-size:44px;font-weight:500;letter-spacing:-.04em;line-height:1}
 .card{position:relative;display:flex;flex-direction:column;justify-content:space-between;text-align:left;
   min-height:188px;padding:14px;border:0;border-radius:var(--r);background:var(--card);color:var(--ink);overflow:hidden}
 .card.t2{background:var(--purple);color:#fff}
-.card.t1{background:var(--pink);color:var(--ink)}
+.card.t1{background:var(--pink);color:#fff}
 .card.wide{grid-column:span 2;min-height:150px}
 .c-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .c-who{display:flex;align-items:center;gap:8px;min-width:0}
 .ava{flex:none;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.08);display:grid;place-items:center;
   font-size:12px;font-weight:600;overflow:hidden}
 .ava img{width:100%;height:100%;object-fit:cover}
-.t2 .ava{background:rgba(255,255,255,.22)}
-.c-div{font-size:12.5px;line-height:1.2;opacity:.7;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.arrow{flex:none;width:18px;height:18px;opacity:.75}
+.t2 .ava, .t1 .ava{background:rgba(255,255,255,.22)}
+.c-div{font-size:12.5px;line-height:1.2;opacity:.85;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.arrow{flex:none;width:18px;height:18px;opacity:.85}
 .c-name{font-size:25px;font-weight:500;letter-spacing:-.035em;line-height:1.02;overflow-wrap:anywhere}
 .c-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:10px}
-.c-role{font-size:13px;opacity:.7;line-height:1.2}
+.c-role{font-size:13px;opacity:.85;line-height:1.2}
 .pts{flex:none;font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.08)}
-.t2 .pts{background:rgba(255,255,255,.2)}
+.t2 .pts, .t1 .pts{background:rgba(255,255,255,.22);color:#fff}
 
 /* Status */
 .state{grid-column:1/-1;padding:56px 12px;text-align:center;color:var(--muted);font-size:15px;line-height:1.5}
@@ -79,11 +94,17 @@ nav a{padding:12px 18px;border-radius:999px;font-size:14px;font-weight:500;white
 nav a[aria-current="page"]{background:var(--ink);color:#fff}
 
 @media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.card.wide{grid-column:span 1;min-height:188px}}
-@media (min-width:1000px){.grid{grid-template-columns:repeat(4,1fr);max-width:1100px}.top{padding-left:max(16px,calc(50vw - 550px));padding-right:max(16px,calc(50vw - 550px))}}
+@media (min-width:1000px){.grid{grid-template-columns:repeat(4,1fr);max-width:1100px}.top,.stats-banner{padding-left:max(16px,calc(50vw - 550px));padding-right:max(16px,calc(50vw - 550px))}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
+
+<div id="welcome-screen"><span>Welcome SPPKP HIMBIG</span></div>
+
+<div class="stats-banner" id="stats-banner">
+  <div class="stats-inner" id="stats-content">Memuat statistik organisasi...</div>
+</div>
 
 <header class="top">
   <div class="top-row">
@@ -120,7 +141,6 @@ const CONFIG = {
     poin:    ["totalakumulasipoint","poin","point","points","totalpoin","skor"],
     foto:    ["foto","photo","gambar","image","linkfoto"]
   },
-  // Aturan warna kartu: Ungu untuk Tahun 2, Pink untuk Tahun 1
   YEAR_THEMES: [
     { test: /2/i, cls: "t2" },  // Ungu
     { test: /1/i, cls: "t1" }   // Pink
@@ -130,7 +150,7 @@ const CONFIG = {
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm = s => String(s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
-const ARROW = '<svg class="arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 14 14 6M7 6h7v7"/></svg>';
+const ARROW = '<svg class="arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 14 14 6M7 6h7v7"/></svg>');
 
 let people = [], activeDiv = "Semua";
 
@@ -152,6 +172,14 @@ function initials(n){
   return n.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join("") || "?";
 }
 
+function toNum(s){
+  let v = String(s).trim().replace(/[^\d.,-]/g, "");
+  if (/^-?\d{1,3}([.,]\d{3})+$/.test(v)) v = v.replace(/[.,]/g, "");
+  else v = v.replace(",", ".");
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
+
 async function load(){
   $("grid").innerHTML = '<div class="skel"></div>'.repeat(4);
   try{
@@ -159,18 +187,34 @@ async function load(){
     if (!res.ok) throw new Error(res.status);
     const rows = await res.json();
     if (!Array.isArray(rows)) throw new Error("format");
-   people = rows.map(r => {
+    
+    people = rows.map(r => {
       const o = {};
       for (const f in CONFIG.FIELDS) o[f] = pick(r, CONFIG.FIELDS[f]);
       return o;
     }).filter(p => p.nama);
 
+    // Pengacakan posisi kartu di beranda
     people.sort(() => Math.random() - 0.5);
+
+    // Hitung Statistik Otomatis untuk Banner (Target max 1600 poin)
+    const totalPengurus = people.length;
+    const divSet = new Set(people.map(p => norm(p.divisi)).filter(Boolean));
+    const totalDivisi = divSet.size;
+    const totalPoinTerkumpul = people.reduce((acc, p) => acc + toNum(p.poin), 0);
+    const targetMaxPoin = 1600;
+    const persen = Math.min(100, Math.round((totalPoinTerkumpul / targetMaxPoin) * 100));
+
+    $("stats-content").innerHTML = `
+      <div>✨ <b>${totalPengurus}</b> Pengurus Aktif • <b>${totalDivisi}</b> Divisi</div>
+      <div>Total Poin: <b>${totalPoinTerkumpul.toLocaleString("id-ID")} / ${targetMaxPoin}</b> (${persen}% Tercapai)</div>
+    `;
 
     buildChips();
     render();
   }catch(e){
     $("count").textContent = "";
+    $("stats-banner").style.display = "none";
     $("grid").innerHTML = '<div class="state">Data belum bisa dimuat. Periksa koneksi internet, lalu coba lagi.<br><button id="retry">Muat ulang</button></div>';
     $("retry").onclick = load;
   }
