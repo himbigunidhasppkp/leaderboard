@@ -12,7 +12,7 @@
   --bg:#ececed; --card:#fff; --ink:#111; --muted:#7a7a80;
   --accent:#ff5a36;
   --purple:#800080; --pink:#ff9ec4;
-  --r:22px;
+  --r:22px; 
 }
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html{scroll-padding-top:150px}
@@ -33,11 +33,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 @keyframes fadeOut{to{opacity:0;visibility:hidden}}
 
 /* Stats Banner */
-.stats-banner{max-width:900px;margin:12px auto 4px;padding:0 16px}
-.stats-inner{background:#fff;border-radius:16px;padding:12px 18px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.03)}
-.stats-inner b{color:var(--ink);font-weight:500}
+.stats-banner, .chart-wrap{max-width:900px;margin:10px auto;padding:0 16px}
+.stats-inner{background:#fff;border-radius:20px;padding:14px 20px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04)}
+.stats-inner b{color:var(--ink);font-weight:600}
 
-/* Header + filter (menempel di atas) */
+/* Header + filter */
 .top{position:sticky;top:0;z-index:5;background:var(--bg);
   padding:calc(12px + env(safe-area-inset-top,0px)) 16px 10px}
 .top-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
@@ -54,7 +54,7 @@ h1{font-size:44px;font-weight:500;letter-spacing:-.04em;line-height:1}
 .card{position:relative;display:flex;flex-direction:column;justify-content:space-between;text-align:left;
   min-height:188px;padding:14px;border:0;border-radius:var(--r);background:var(--card);color:var(--ink);overflow:hidden}
 .card.t2{background:var(--purple);color:#fff}
-.card.t1{background:var(--pink);color:#fff}
+.card.t1{background:var(--pink);color:#000000}
 .card.wide{grid-column:span 2;min-height:150px}
 .c-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .c-who{display:flex;align-items:center;gap:8px;min-width:0}
@@ -69,7 +69,23 @@ h1{font-size:44px;font-weight:500;letter-spacing:-.04em;line-height:1}
 .c-role{font-size:13px;opacity:.85;line-height:1.2}
 .pts{flex:none;font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.08)}
 .t2 .pts, .t1 .pts{background:rgba(255,255,255,.22);color:#fff}
-
+/* Diagram poin per divisi */
+.chart-wrap{max-width:900px;margin:8px auto 0;padding:0 16px}
+.chart{background:#fff;border-radius:16px;padding:0 18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.chart summary{list-style:none;cursor:pointer;padding:14px 0;font-size:15px;font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.chart summary::-webkit-details-marker{display:none}
+.chart summary::after{content:"+";font-size:20px;color:var(--muted)}
+.chart[open] summary::after{content:"–"}
+.chart-seg{display:flex;gap:8px;margin-bottom:14px}
+.chart-seg .chip{background:var(--bg);padding:8px 14px;font-size:13px}
+.chart-seg .chip[aria-pressed="true"]{background:var(--ink)}
+.bars{padding-bottom:16px}
+.bar-row{margin-bottom:12px}
+.bar-label{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:5px}
+.bar-label b{font-weight:600;font-variant-numeric:tabular-nums}
+.bar-track{height:12px;border-radius:999px;background:var(--bg);overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;background:var(--ink);transition:width .5s ease}
+.bar-fill.top{background:var(--accent)}
 /* Status */
 .state{grid-column:1/-1;padding:56px 12px;text-align:center;color:var(--muted);font-size:15px;line-height:1.5}
 .state button{margin-top:14px;border:0;background:var(--ink);color:#fff;border-radius:999px;padding:11px 20px;font-weight:500}
@@ -102,10 +118,29 @@ nav a[aria-current="page"]{background:var(--ink);color:#fff}
 
 <div id="welcome-screen"><span>Welcome SPPKP HIMBIG</span></div>
 
+<script>
+  try {
+    if (sessionStorage.getItem("welcomed")) {
+      document.getElementById("welcome-screen").remove();
+    } else {
+      sessionStorage.setItem("welcomed", "1");
+    }
+  } catch (e) {}
+</script>
+
 <div class="stats-banner" id="stats-banner">
   <div class="stats-inner" id="stats-content">Memuat statistik organisasi...</div>
 </div>
-
+<section class="chart-wrap">
+  <details class="chart">
+    <summary>Poin per Divisi</summary>
+    <div class="chart-seg" id="chart-seg">
+      <button class="chip" data-m="periode" aria-pressed="true">Periode</button>
+      <button class="chip" data-m="akumulasi" aria-pressed="false">Akumulasi</button>
+    </div>
+    <div class="bars" id="chart-bars"></div>
+  </details>
+</section>
 <header class="top">
   <div class="top-row">
     <h1>Pengurus</h1>
@@ -139,6 +174,8 @@ const CONFIG = {
     divisi:  ["divisi","division","bidang"],
     tahun:   ["tahunabdi","tahun","angkatan"],
     poin:    ["totalakumulasipoint","poin","point","points","totalpoin","skor"],
+    poinT1:  ["pointtahun1","pointahun1"],
+    poinT2:  ["pointtahun2","pointahun2"],
     foto:    ["foto","photo","gambar","image","linkfoto"]
   },
   YEAR_THEMES: [
@@ -179,7 +216,10 @@ function toNum(s){
   const n = parseFloat(v);
   return isNaN(n) ? 0 : n;
 }
-
+function poinPeriode(p){
+  // Tahun 2 -> kolom "Point Tahun 2", selain itu -> kolom "Point Tahun 1"
+  return toNum(themeOf(p.tahun) === "t2" ? p.poinT2 : p.poinT1);
+}
 async function load(){
   $("grid").innerHTML = '<div class="skel"></div>'.repeat(4);
   try{
@@ -188,30 +228,33 @@ async function load(){
     const rows = await res.json();
     if (!Array.isArray(rows)) throw new Error("format");
     
-    people = rows.map(r => {
+  people = rows.map(r => {
       const o = {};
       for (const f in CONFIG.FIELDS) o[f] = pick(r, CONFIG.FIELDS[f]);
       return o;
     }).filter(p => p.nama);
 
-    // Pengacakan posisi kartu di beranda
     people.sort(() => Math.random() - 0.5);
 
-    // Hitung Statistik Otomatis untuk Banner (Target max 1600 poin)
     const totalPengurus = people.length;
-    const divSet = new Set(people.map(p => norm(p.divisi)).filter(Boolean));
+    const divSet = new Set(people.map(p => norm(p.divisi || "")).filter(Boolean));
     const totalDivisi = divSet.size;
-    const totalPoinTerkumpul = people.reduce((acc, p) => acc + toNum(p.poin), 0);
+
+        let totalPoinTerkumpul = 0;
+    people.forEach(p => {
+      totalPoinTerkumpul += poinPeriode(p);
+    });
+
     const targetMaxPoin = 1600;
     const persen = Math.min(100, Math.round((totalPoinTerkumpul / targetMaxPoin) * 100));
 
     $("stats-content").innerHTML = `
       <div>✨ <b>${totalPengurus}</b> Pengurus Aktif • <b>${totalDivisi}</b> Divisi</div>
-      <div>Total Poin: <b>${totalPoinTerkumpul.toLocaleString("id-ID")} / ${targetMaxPoin}</b> (${persen}% Tercapai)</div>
+      <div>Total Poin: <b>${totalPoinTerkumpul.toLocaleString("id-ID")} / ${targetMaxPoin} pts</b> (${persen}% Tercapai)</div>
     `;
-
-    buildChips();
+       buildChips();
     render();
+    renderChart();   // <- baris baru
   }catch(e){
     $("count").textContent = "";
     $("stats-banner").style.display = "none";
@@ -276,7 +319,34 @@ $("grid").addEventListener("click", e => {
 });
 $("d-close").onclick = () => $("sheet").close();
 $("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("sheet").close(); });
+/* Diagram batang poin per divisi — dibuat otomatis dari data Sheet */
+let chartMode = "periode";
 
+function renderChart(){
+  const sum = new Map();
+  people.forEach(p => {
+    if (!p.divisi) return;
+    const k = norm(p.divisi);
+    const v = chartMode === "periode" ? poinPeriode(p) : toNum(p.poin);
+    const o = sum.get(k) || { name: p.divisi, total: 0 };
+    o.total += v;
+    sum.set(k, o);
+  });
+  const list = [...sum.values()].sort((a, b) => b.total - a.total);
+  const max = Math.max(...list.map(d => d.total), 1);
+  $("chart-bars").innerHTML = list.map((d, i) => `
+    <div class="bar-row">
+      <div class="bar-label"><span>${esc(d.name)}</span><b>${d.total.toLocaleString("id-ID")}</b></div>
+      <div class="bar-track"><div class="bar-fill${i === 0 ? " top" : ""}" style="width:${(d.total / max) * 100}%"></div></div>
+    </div>`).join("");
+}
+
+$("chart-seg").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  chartMode = b.dataset.m;
+  document.querySelectorAll("#chart-seg .chip").forEach(c => c.setAttribute("aria-pressed", c === b));
+  renderChart();
+});
 load();
 </script>
 </body>
